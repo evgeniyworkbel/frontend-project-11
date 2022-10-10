@@ -11,11 +11,13 @@ jobs:
           node-version: 16
           cache: 'npm'
 
-      - run: make install
+      - name: Install dependencies
+      - run: make ci
+      
+      - name: Fire linter
       - run: make lint
 
-      - name: Test & publish code coverage
-        # Publish code coverage on Code Climate
+      - name: Test & define maintability level on Code Climate
         # https://github.com/paambaati/codeclimate-action
         uses: paambaati/codeclimate-action@v3.0.0
         # Add Code Climate secret key
