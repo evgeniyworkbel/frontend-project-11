@@ -12,8 +12,8 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-      - run: make ci
+        run: make ci
       
       - name: Fire linter
-      - run: make lint
+        run: make lint
 
