@@ -1,7 +1,7 @@
-// Import our custom CSS
-import './styles.scss';
+import './styles.scss'; // Import our custom CSS
+import 'bootstrap'; // Import all of Bootstrap's JS
+import app from './app.js';
 
-// Import all of Bootstrap's JS
-import 'bootstrap';
+console.log('3 proj!');
 
-console.log('My 3 proj has started successfully :)');
+app();
