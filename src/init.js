@@ -1,12 +1,22 @@
 import * as yup from 'yup';
 import onChange from 'on-change';
 import i18next from 'i18next';
+import axios from 'axios';
 import watcher from './watcher.js';
 import resources from '../locales/index.js';
 
 const getYupSchema = (items) => yup.string().url().notOneOf(items); // items - feeds from state
 
+const createProxy = (proxyBase, link) => {
+  const url = new URL('/get', proxyBase);
+  const href = url;
+  href.searchParams.append('disableCache', 'true');
+  href.searchParams.append('url', link);
+  return href;
+};
+
 export default () => {
+  const defaultProxyBase = 'https://allorigins.hexlet.app';
   const defaultLanguage = 'ru';
 
   const i18nInstance = i18next.createInstance();
@@ -18,10 +28,10 @@ export default () => {
 
   yup.setLocale({
     mixed: {
-      notOneOf: 'rssForm.feedback.duplicate',
+      notOneOf: 'rssForm.feedback.errors.duplicate',
     },
     string: {
-      url: 'rssForm.feedback.invalidUrl',
+      url: 'rssForm.feedback.errors.invalidUrl',
     },
   });
 
@@ -33,11 +43,6 @@ export default () => {
       link: null,
       feedback: [],
     },
-    /*
-    uiState: {
-      rssForm: {},
-    },
-    */ // does it need?
     urls: [],
   };
 
@@ -58,18 +63,34 @@ export default () => {
     ev.preventDefault();
     watchedState.rssForm.processState = 'validating';
 
-    const schema = getYupSchema(state.urls);
+    const schema = getYupSchema(watchedState.urls);
     schema.validate(watchedState.rssForm.link)
       .then((link) => {
         watchedState.rssForm.processState = 'validated';
-        watchedState.rssForm.valid = true; // does it need?
-        watchedState.rssForm.feedback = 'rssForm.feedback.success';
-        watchedState.urls.push(link);
+        watchedState.rssForm.valid = true;
+        return link;
+      })
+      .then((link) => {
+        const proxyLink = createProxy(defaultProxyBase, link);
+        watchedState.rssForm.processState = 'loading';
+        axios.get(proxyLink)
+          .then((response) => {
+            watchedState.rssForm.processState = 'loaded';
+            watchedState.rssForm.feedback = 'rssForm.feedback.success';
+            watchedState.urls.push(link);
+            console.log(response.data.contents);
+          })
+          .catch((e) => {
+            watchedState.rssForm.processState = 'network_error';
+            watchedState.rssForm.feedback = i18nInstance.t('rssForm.feedback.errors.network');
+            console.error(e);
+          });
       })
       .catch((e) => {
         watchedState.rssForm.processState = 'invalidated';
-        watchedState.rssForm.valid = false; // does it need?
+        watchedState.rssForm.valid = false;
         watchedState.rssForm.feedback = e.errors;
+        console.error(e);
       });
   });
 };
