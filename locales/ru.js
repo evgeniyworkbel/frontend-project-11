@@ -3,9 +3,13 @@ export default {
     rssForm: {
       feedback: {
         success: 'RSS успешно загружен',
-        invalidUrl: 'Ссылка должна быть валидным URL',
-        duplicate: 'RSS уже существует',
+        errors: {
+          invalidUrl: 'Ссылка должна быть валидным URL',
+          duplicate: 'RSS уже существует',
+          network: 'Проблемы с интернетом. Попробуйте ещё раз',
+        },
       },
     },
+
   },
 };
