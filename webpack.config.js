@@ -1,11 +1,9 @@
 // Generated using webpack-cli https://github.com/webpack/webpack-cli
 
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin'); // eslint-disable-line import/no-extraneous-dependencies
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-/* eslint-disable eqeqeq */
-const isProduction = process.env.NODE_ENV == 'development';
-/* eslint-enable eqeqeq */
+const isProduction = process.env.NODE_ENV == 'development'; // eslint-disable-line eqeqeq
 
 const config = {
   entry: './src/index.js',
