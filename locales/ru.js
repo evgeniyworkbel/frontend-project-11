@@ -9,5 +9,7 @@ export default {
         parser: 'Ресурс не содержит валидный RSS',
       },
     },
+    feeds: 'Фиды',
+    posts: 'Посты',
   },
 };
