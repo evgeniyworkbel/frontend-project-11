@@ -69,6 +69,8 @@ export default () => {
     input: document.querySelector('#url-input'),
     submitBtn: document.querySelector('.rss-form button[type="submit"]'),
     feedback: document.querySelector('.feedback'),
+    feeds: document.querySelector('.feeds'),
+    posts: document.querySelector('.posts'),
   };
 
   const watchedState = onChange(state, watch(elements, i18nInstance));
@@ -107,7 +109,7 @@ export default () => {
 
         watchedState.data.feeds.push(newFeed);
         watchedState.data.posts.push(...newPosts);
-        console.log(watchedState.data);
+
         watchedState.rssForm.processState = 'loaded';
         watchedState.rssForm.valid = true;
         watchedState.rssForm.feedback = i18nCodes.feedback.success;
