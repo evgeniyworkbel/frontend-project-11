@@ -67,11 +67,11 @@ export default (elements, i18nInstance) => (path, value) => {
       renderFeedback(elements, value, i18nInstance);
       break;
 
-    case 'watchedState.data.feeds':
+    case 'data.feeds':
       // handling code
       break;
 
-    case 'watchedState.data.posts':
+    case 'data.posts':
       // handling code
       break;
 
