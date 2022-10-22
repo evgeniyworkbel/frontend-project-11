@@ -5,6 +5,7 @@ import axios from 'axios';
 import watch from './watcher.js';
 import parse from './parser.js';
 import resources from '../locales/index.js';
+import generatorId from './generatorId.js';
 
 const getYupSchema = (items) => yup.string().url().notOneOf(items); // items - feeds from state
 
@@ -18,6 +19,7 @@ const createProxy = (proxyBase, link) => {
 
 export default () => {
   const defaultProxyBase = 'https://allorigins.hexlet.app';
+  const generateId = generatorId();
   const defaultLanguage = 'ru';
   const i18nCodes = {
     feedback: {
@@ -29,7 +31,6 @@ export default () => {
         parser: 'feedback.errors.parser',
       },
     },
-
   };
 
   const i18nInstance = i18next.createInstance();
@@ -98,11 +99,15 @@ export default () => {
           throw new Error('Parser Error');
         }
 
-        // add id to newfeed, newposts
+        newFeed.id = generateId();
+        newPosts.forEach((post) => {
+          post.id = generateId(); // eslint-disable-line no-param-reassign
+          post.feedId = newFeed.id; // eslint-disable-line no-param-reassign
+        });
 
         watchedState.data.feeds.push(newFeed);
         watchedState.data.posts.push(...newPosts);
-
+        console.log(watchedState.data);
         watchedState.rssForm.processState = 'loaded';
         watchedState.rssForm.valid = true;
         watchedState.rssForm.feedback = i18nCodes.feedback.success;
