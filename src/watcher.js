@@ -1,6 +1,32 @@
 const handleProcessState = (elements, processState) => {
   const { form, input, submitBtn } = elements;
   switch (processState) {
+    case 'loading':
+      submitBtn.disabled = true;
+      break;
+
+    case 'loaded':
+      form.reset();
+      input.focus();
+      break;
+
+    case 'spying':
+      break;
+
+    case 'parser_error':
+    case 'network_error':
+      submitBtn.disabled = false;
+      input.style.border = 'thick solid red';
+      break;
+
+    default:
+      throw new Error(`Unknown process state "${processState}"`);
+  }
+};
+
+const handleFormProcessState = (elements, processState) => {
+  const { input, submitBtn } = elements;
+  switch (processState) {
     case 'filling':
       submitBtn.disabled = false;
       break;
@@ -9,26 +35,18 @@ const handleProcessState = (elements, processState) => {
       submitBtn.disabled = true;
       break;
 
-    case 'loading':
-      submitBtn.disabled = true;
-      break;
-
-    case 'loaded':
+    case 'validated':
       submitBtn.disabled = false;
       input.style.border = null;
-      form.reset();
-      input.focus();
       break;
 
-    case 'parser_error':
-    case 'network_error':
     case 'invalidated':
       submitBtn.disabled = false;
       input.style.border = 'thick solid red';
       break;
 
     default:
-      throw new Error(`Unknown process state "${processState}"`);
+      throw new Error(`Unknown form process state "${processState}"`);
   }
 };
 
@@ -135,11 +153,15 @@ const renderPosts = (elements, value, i18nInstance) => {
 
 export default (elements, i18nInstance) => (path, value) => {
   switch (path) {
-    case 'rssForm.processState':
+    case 'processState':
       handleProcessState(elements, value);
       break;
 
-    case 'rssForm.feedback':
+    case 'rssForm.processState':
+      handleFormProcessState(elements, value);
+      break;
+
+    case 'uiState.feedback':
       renderFeedback(elements, value, i18nInstance);
       break;
 
@@ -156,8 +178,7 @@ export default (elements, i18nInstance) => (path, value) => {
       break;
 
     case 'rssForm.link':
-    case 'urls':
-    case 'rssForm.valid':
+    case 'validatedLinks':
       break;
 
     default:
