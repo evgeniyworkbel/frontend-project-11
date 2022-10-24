@@ -5,7 +5,7 @@ export default {
       errors: {
         invalidUrl: 'Ссылка должна быть валидным URL',
         duplicate: 'RSS уже существует',
-        network: 'Проблемы с интернетом. Попробуйте ещё раз',
+        network: 'Ошибка сети',
         parser: 'Ресурс не содержит валидный RSS',
       },
     },
