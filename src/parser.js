@@ -35,8 +35,8 @@ const extractPosts = (domTree) => {
 export default (contents) => {
   const parser = new DOMParser();
   const doc = parser.parseFromString(contents, 'text/xml');
-  const newFeed = extractFeed(doc);
-  const newPosts = extractPosts(doc);
+  const currentFeed = extractFeed(doc);
+  const currentPosts = extractPosts(doc);
 
-  return { newFeed, newPosts };
+  return { currentFeed, currentPosts };
 };
