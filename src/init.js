@@ -6,6 +6,7 @@ import watch from './watcher.js';
 import parse from './parser.js';
 import resources from '../locales/index.js';
 import generatorId from './generatorId.js';
+import updatePosts from './updater.js';
 
 const getYupSchema = (items) => yup.string().url().notOneOf(items); // items - feeds from state
 
@@ -51,13 +52,15 @@ export default () => {
 
   const state = {
     lng: defaultLanguage,
+    processState: 'initialized',
     rssForm: {
       processState: 'filling',
-      valid: true,
       link: null,
+    },
+    uiState: {
       feedback: null,
     },
-    urls: [],
+    validatedLinks: [],
     data: {
       feeds: [],
       posts: [],
@@ -82,59 +85,64 @@ export default () => {
   elements.form.addEventListener('submit', (ev) => {
     ev.preventDefault();
     watchedState.rssForm.processState = 'validating';
-    const schema = getYupSchema(watchedState.urls);
+    const schema = getYupSchema(watchedState.validatedLinks);
+    let proxyUrl;
+
     schema.validate(watchedState.rssForm.link)
       .then((link) => {
-        const proxyLink = createProxy(defaultProxyBase, link);
-        watchedState.rssForm.processState = 'loading';
-        return axios.get(proxyLink);
+        watchedState.processState = 'loading';
+        proxyUrl = createProxy(defaultProxyBase, link);
+        return axios.get(proxyUrl);
       })
-      .then((response) => {
-        watchedState.urls.push(response.data.status.url);
-        return response.data.contents;
-      })
+      .then((response) => response.data.contents)
       .then((content) => {
         const parsedContent = parse(content);
-        const { newFeed, newPosts } = parsedContent;
+        const { currentFeed, currentPosts } = parsedContent;
 
-        if (!newFeed || !newPosts) {
+        if (!currentFeed || !currentPosts) {
           throw new Error('Parser Error');
         }
 
-        newFeed.id = generateId();
-        newPosts.forEach((post) => {
+        currentFeed.id = generateId();
+        currentPosts.forEach((post) => {
+          post.feedId = currentFeed.id; // eslint-disable-line no-param-reassign
           post.id = generateId(); // eslint-disable-line no-param-reassign
-          post.feedId = newFeed.id; // eslint-disable-line no-param-reassign
         });
 
-        watchedState.data.feeds.push(newFeed);
-        watchedState.data.posts.push(...newPosts);
+        watchedState.data.feeds.push(currentFeed);
+        watchedState.data.posts.push(...currentPosts);
 
-        watchedState.rssForm.processState = 'loaded';
-        watchedState.rssForm.valid = true;
-        watchedState.rssForm.feedback = i18nCodes.feedback.success;
+        watchedState.rssForm.processState = 'validated';
+        watchedState.processState = 'loaded';
+        watchedState.uiState.feedback = i18nCodes.feedback.success;
+        watchedState.validatedLinks.push(watchedState.rssForm.link);
+        watchedState.rssForm.processState = 'filling';
+        return currentFeed.id;
+      })
+      .then((feedId) => {
+        watchedState.processState = 'spying';
+        return setTimeout(() => updatePosts(watchedState, proxyUrl, feedId, generateId), 5000);
       })
       .catch((e) => {
-        watchedState.rssForm.valid = false;
         switch (e.name) {
           case 'ValidationError': {
             const [errorCode] = e.errors;
             watchedState.rssForm.processState = 'invalidated';
-            watchedState.rssForm.feedback = errorCode;
+            watchedState.uiState.feedback = errorCode;
             break;
           }
 
           case 'AxiosError':
             if (e.message === 'Network Error') {
-              watchedState.rssForm.processState = 'network_error';
-              watchedState.rssForm.feedback = i18nCodes.feedback.errors.network;
+              watchedState.processState = 'network_error';
+              watchedState.uiState.feedback = i18nCodes.feedback.errors.network;
             }
             break;
 
           case 'Error':
             if (e.message === 'Parser Error') {
-              watchedState.rssForm.processState = 'parser_error';
-              watchedState.rssForm.feedback = i18nCodes.feedback.errors.parser;
+              watchedState.processState = 'parser_error';
+              watchedState.uiState.feedback = i18nCodes.feedback.errors.parser;
             }
             break;
 
@@ -142,7 +150,7 @@ export default () => {
             throw new Error(`Unknown error ${e}`);
         }
 
-        console.error(e);
+        console.error(e.message);
       });
   });
 };

@@ -1,4 +1,4 @@
-ci:
+install:
 	npm ci
 
 link:
