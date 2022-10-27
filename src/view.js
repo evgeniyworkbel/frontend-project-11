@@ -1,7 +1,7 @@
 import onChange from 'on-change';
 
-// TODO add fn to initial html render
-// TODO combine renderFeeds and renderPosts - they have a plenty of common code 
+// TODO add fn for initial html render
+// TODO combine renderFeeds and renderPosts
 
 const handleProcessState = (elements, processState) => {
   const { form, input, submitBtn } = elements;
