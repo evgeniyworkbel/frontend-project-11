@@ -1,3 +1,8 @@
+import onChange from 'on-change';
+
+// TODO add fn to initial html render
+// TODO combine renderFeeds and renderPosts - they have a plenty of common code
+
 const handleProcessState = (elements, processState) => {
   const { form, input, submitBtn } = elements;
   switch (processState) {
@@ -10,13 +15,13 @@ const handleProcessState = (elements, processState) => {
       input.focus();
       break;
 
+    case 'initialized':
     case 'spying':
       break;
 
     case 'parser_error':
     case 'network_error':
       submitBtn.disabled = false;
-      input.style.border = 'thick solid red';
       break;
 
     default:
@@ -24,9 +29,9 @@ const handleProcessState = (elements, processState) => {
   }
 };
 
-const handleFormProcessState = (elements, processState) => {
+const handleFormProcessState = (elements, formProcessState) => {
   const { input, submitBtn } = elements;
-  switch (processState) {
+  switch (formProcessState) {
     case 'filling':
       submitBtn.disabled = false;
       break;
@@ -37,16 +42,16 @@ const handleFormProcessState = (elements, processState) => {
 
     case 'validated':
       submitBtn.disabled = false;
-      input.style.border = null;
+      input.classList.remove('is-invalid');
       break;
 
     case 'invalidated':
       submitBtn.disabled = false;
-      input.style.border = 'thick solid red';
+      input.classList.add('is-invalid');
       break;
 
     default:
-      throw new Error(`Unknown form process state "${processState}"`);
+      throw new Error(`Unknown form process state "${formProcessState}"`);
   }
 };
 
@@ -57,27 +62,23 @@ const renderFeedback = (elements, value, i18nInstance) => {
 
   switch (value) {
     case 'feedback.success':
-      feedback.classList.remove('text-danger');
-      feedback.classList.add('text-success');
+      feedback.classList.replace('text-danger', 'text-success');
       break;
 
+    case 'feedback.errors.empty_field':
     case 'feedback.errors.duplicate':
-    case 'feedback.errors.invalidUrl':
+    case 'feedback.errors.invalid_url':
     case 'feedback.errors.network':
     case 'feedback.errors.parser':
-      feedback.classList.remove('text-success');
-      feedback.classList.add('text-danger');
+      feedback.classList.replace('text-success', 'text-danger');
       break;
 
     default:
-      console.log('Oops...');
       throw new Error(`Unknown feedback code "${value}"`);
   }
 };
 
-// think about function combination renderFeeds and renderPosts - they have a plenty of common code
-
-const renderFeeds = (elements, value, i18nInstance) => {
+const renderFeeds = (elements, values, i18nInstance) => {
   const { feeds } = elements;
   const div1 = document.createElement('div');
   div1.classList.add('card', 'border-0');
@@ -92,7 +93,7 @@ const renderFeeds = (elements, value, i18nInstance) => {
   const ul = document.createElement('ul');
   ul.classList.add('list-group', 'border-0', 'rounded-0');
 
-  value.forEach((feed) => {
+  values.forEach((feed) => {
     const li = document.createElement('li');
     li.classList.add('list-group-item', 'border-0', 'border-end-0');
 
@@ -114,7 +115,7 @@ const renderFeeds = (elements, value, i18nInstance) => {
   feeds.append(div1);
 };
 
-const renderPosts = (elements, value, i18nInstance) => {
+const renderPosts = (elements, values, i18nInstance, watchedState) => {
   const { posts } = elements;
   const div1 = document.createElement('div');
   div1.classList.add('card', 'border-0');
@@ -129,9 +130,14 @@ const renderPosts = (elements, value, i18nInstance) => {
   const ul = document.createElement('ul');
   ul.classList.add('list-group', 'border-0', 'rounded-0');
 
-  value.forEach((post) => {
+  values.forEach((post) => {
     const li = document.createElement('li');
     li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
+
+    li.addEventListener('click', (ev) => {
+      const { id } = ev.target.dataset;
+      watchedState.uiState.readPostsId.push(id);
+    });
 
     const a = document.createElement('a');
     a.classList.add('fw-bold');
@@ -141,7 +147,25 @@ const renderPosts = (elements, value, i18nInstance) => {
     a.dataset.id = post.id;
     a.textContent = post.title;
 
-    li.append(a);
+    const btn = document.createElement('button');
+    btn.setAttribute('type', 'button');
+    btn.classList.add('btn', 'btn-outline-primary', 'btn-sm');
+    btn.dataset.id = post.id;
+    btn.dataset.bsToggle = 'modal';
+    btn.dataset.bsTarget = '#modal';
+    btn.textContent = i18nInstance.t('buttons.modal');
+
+    btn.addEventListener('click', (ev) => {
+      const { bsTarget } = ev.target.dataset;
+      const modal = document.querySelector(bsTarget);
+      const modalTitle = modal.querySelector('.modal-title');
+      const modalBody = modal.querySelector('.modal-body');
+
+      modalTitle.textContent = post.title;
+      modalBody.textContent = post.description;
+    });
+
+    li.append(a, btn);
     ul.append(li);
   });
 
@@ -151,37 +175,57 @@ const renderPosts = (elements, value, i18nInstance) => {
   posts.append(div1);
 };
 
-export default (elements, i18nInstance) => (path, value) => {
-  switch (path) {
-    case 'processState':
-      handleProcessState(elements, value);
-      break;
+const setLinkBrightness = (readPostsId) => {
+  const anchors = document.querySelectorAll('.posts ul .list-group-item a');
+  const readPostsIdColl = new Set(readPostsId);
 
-    case 'rssForm.processState':
-      handleFormProcessState(elements, value);
-      break;
+  anchors.forEach((a) => {
+    if (readPostsIdColl.has(a.dataset.id)) {
+      a.classList.replace('fw-bold', 'fw-normal');
+      a.classList.add('link-secondary');
+    }
+  });
+};
 
-    case 'uiState.feedback':
-      renderFeedback(elements, value, i18nInstance);
-      break;
+export default (state, elements, i18nInstance) => {
+  const watchedState = onChange(state, (path, value) => {
+    switch (path) {
+      case 'processState':
+        handleProcessState(elements, value);
+        break;
 
-    case 'data.feeds':
-      renderFeeds(elements, value, i18nInstance);
-      break;
+      case 'rssForm.processState':
+        handleFormProcessState(elements, value);
+        break;
 
-    case 'data.posts':
-      renderPosts(elements, value, i18nInstance);
-      break;
+      case 'uiState.feedback':
+        renderFeedback(elements, value, i18nInstance);
+        break;
 
-    case 'lng':
-      // add language change (in future)
-      break;
+      case 'uiState.readPostsId':
+        setLinkBrightness(value);
+        break;
 
-    case 'rssForm.link':
-    case 'validatedLinks':
-      break;
+      case 'data.feeds':
+        renderFeeds(elements, value, i18nInstance);
+        break;
 
-    default:
-      throw new Error(`Unwatched path ${path}`);
-  }
+      case 'data.posts':
+        renderPosts(elements, value, i18nInstance, watchedState);
+        setLinkBrightness(watchedState.uiState.readPostsId);
+        break;
+
+      case 'lng':
+        break;
+
+      case 'rssForm.link':
+      case 'validatedLinks':
+        break;
+
+      default:
+        throw new Error(`Unwatched path ${path}`);
+    }
+  });
+
+  return watchedState;
 };

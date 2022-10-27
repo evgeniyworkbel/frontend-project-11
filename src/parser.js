@@ -20,13 +20,15 @@ const extractPosts = (domTree) => {
 
   const posts = Array.from(itemEls)
     .map((item) => {
-      const title = item
-        .querySelector('title')
-        .textContent;
-      const link = item
-        .querySelector('link')
-        .textContent;
-      return { title, link };
+      const titleEl = item.querySelector('title');
+      const descriptionEl = item.querySelector('description');
+      const linkEl = item.querySelector('link');
+
+      const title = titleEl.textContent;
+      const description = descriptionEl.textContent;
+      const link = linkEl.textContent;
+
+      return { title, description, link };
     });
 
   return posts;

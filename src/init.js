@@ -1,18 +1,20 @@
 import * as yup from 'yup';
-import onChange from 'on-change';
+
 import i18next from 'i18next';
 import axios from 'axios';
-import watch from './watcher.js';
+import watch from './view.js';
 import parse from './parser.js';
 import resources from '../locales/index.js';
 import generatorId from './generatorId.js';
 import updatePosts from './updater.js';
 
-const getYupSchema = (items) => yup.string().url().notOneOf(items); // items - feeds from state
+// TODO bind updater to array of urls and make a single request
+// TODO add change of language
+
+const getYupSchema = (validatedLinks) => yup.string().required().url().notOneOf(validatedLinks);
 
 const createProxy = (proxyBase, link) => {
-  const url = new URL('/get', proxyBase);
-  const href = url;
+  const href = new URL('/get', proxyBase);
   href.searchParams.append('disableCache', 'true');
   href.searchParams.append('url', link);
   return href;
@@ -26,7 +28,8 @@ export default () => {
     feedback: {
       success: 'feedback.success',
       errors: {
-        invalidUrl: 'feedback.errors.invalidUrl',
+        emptyField: 'feedback.errors.empty_field',
+        invalidUrl: 'feedback.errors.invalid_url',
         duplicate: 'feedback.errors.duplicate',
         network: 'feedback.errors.network',
         parser: 'feedback.errors.parser',
@@ -34,8 +37,8 @@ export default () => {
     },
   };
 
-  const i18nInstance = i18next.createInstance();
-  i18nInstance.init({
+  const i18nextInstance = i18next.createInstance();
+  i18nextInstance.init({
     lng: defaultLanguage,
     debug: false,
     resources,
@@ -46,6 +49,7 @@ export default () => {
       notOneOf: i18nCodes.feedback.errors.duplicate,
     },
     string: {
+      required: i18nCodes.feedback.errors.emptyField,
       url: i18nCodes.feedback.errors.invalidUrl,
     },
   });
@@ -58,6 +62,7 @@ export default () => {
       link: null,
     },
     uiState: {
+      readPostsId: [],
       feedback: null,
     },
     validatedLinks: [],
@@ -76,7 +81,7 @@ export default () => {
     posts: document.querySelector('.posts'),
   };
 
-  const watchedState = onChange(state, watch(elements, i18nInstance));
+  const watchedState = watch(state, elements, i18nextInstance);
 
   elements.input.addEventListener('change', (ev) => {
     watchedState.rssForm.link = ev.target.value;
@@ -90,6 +95,7 @@ export default () => {
 
     schema.validate(watchedState.rssForm.link)
       .then((link) => {
+        watchedState.rssForm.processState = 'validated';
         watchedState.processState = 'loading';
         proxyUrl = createProxy(defaultProxyBase, link);
         return axios.get(proxyUrl);
@@ -111,11 +117,10 @@ export default () => {
 
         watchedState.data.feeds.push(currentFeed);
         watchedState.data.posts.push(...currentPosts);
+        watchedState.validatedLinks.push(watchedState.rssForm.link);
 
-        watchedState.rssForm.processState = 'validated';
         watchedState.processState = 'loaded';
         watchedState.uiState.feedback = i18nCodes.feedback.success;
-        watchedState.validatedLinks.push(watchedState.rssForm.link);
         watchedState.rssForm.processState = 'filling';
         return currentFeed.id;
       })

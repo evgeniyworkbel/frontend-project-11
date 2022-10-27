@@ -3,7 +3,8 @@ export default {
     feedback: {
       success: 'RSS успешно загружен',
       errors: {
-        invalidUrl: 'Ссылка должна быть валидным URL',
+        empty_field: 'Не должно быть пустым',
+        invalid_url: 'Ссылка должна быть валидным URL',
         duplicate: 'RSS уже существует',
         network: 'Ошибка сети',
         parser: 'Ресурс не содержит валидный RSS',
@@ -11,5 +12,8 @@ export default {
     },
     feeds: 'Фиды',
     posts: 'Посты',
+    buttons: {
+      modal: 'Просмотр',
+    },
   },
 };
