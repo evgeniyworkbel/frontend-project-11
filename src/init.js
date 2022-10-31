@@ -2,7 +2,7 @@ import * as yup from 'yup';
 
 import i18next from 'i18next';
 import axios from 'axios';
-import watch from './view.js';
+import watch, { renderInitContent } from './view.js';
 import parse from './parser.js';
 import resources from '../locales/index.js';
 import generatorId from './generatorId.js';
@@ -22,20 +22,9 @@ const createProxy = (proxyBase, link) => {
 
 export default () => {
   const defaultProxyBase = 'https://allorigins.hexlet.app';
-  const generateId = generatorId();
   const defaultLanguage = 'ru';
-  const i18nCodes = {
-    feedback: {
-      success: 'feedback.success',
-      errors: {
-        emptyField: 'feedback.errors.empty_field',
-        invalidUrl: 'feedback.errors.invalid_url',
-        duplicate: 'feedback.errors.duplicate',
-        network: 'feedback.errors.network',
-        parser: 'feedback.errors.parser',
-      },
-    },
-  };
+
+  const generateId = generatorId();
 
   const i18nextInstance = i18next.createInstance();
   i18nextInstance.init({
@@ -46,11 +35,11 @@ export default () => {
 
   yup.setLocale({
     mixed: {
-      notOneOf: i18nCodes.feedback.errors.duplicate,
+      notOneOf: 'feedback.errors.duplicate',
     },
     string: {
-      required: i18nCodes.feedback.errors.emptyField,
-      url: i18nCodes.feedback.errors.invalidUrl,
+      required: 'feedback.errors.empty_field',
+      url: 'feedback.errors.invalid_url',
     },
   });
 
@@ -73,13 +62,21 @@ export default () => {
   };
 
   const elements = {
+    modalFullArticleBtn: document.querySelector('.modal-footer a.full-article'),
+    modalCloseBtn: document.querySelector('.modal-footer button'),
+    mainTitle: document.getElementById('main-title'),
+    slogan: document.querySelector('main .lead'),
     form: document.querySelector('.rss-form'),
-    input: document.querySelector('#url-input'),
+    input: document.getElementById('url-input'),
+    label: document.querySelector('.rss-form label'),
     submitBtn: document.querySelector('.rss-form button[type="submit"]'),
+    sample: document.getElementById('sample'),
     feedback: document.querySelector('.feedback'),
     feeds: document.querySelector('.feeds'),
     posts: document.querySelector('.posts'),
   };
+
+  renderInitContent(elements, i18nextInstance);
 
   const watchedState = watch(state, elements, i18nextInstance);
 
@@ -120,7 +117,7 @@ export default () => {
         watchedState.validatedLinks.push(watchedState.rssForm.link);
 
         watchedState.processState = 'loaded';
-        watchedState.uiState.feedback = i18nCodes.feedback.success;
+        watchedState.uiState.feedback = 'feedback.success';
         watchedState.rssForm.processState = 'filling';
         return currentFeed.id;
       })
@@ -140,14 +137,14 @@ export default () => {
           case 'AxiosError':
             if (e.message === 'Network Error') {
               watchedState.processState = 'network_error';
-              watchedState.uiState.feedback = i18nCodes.feedback.errors.network;
+              watchedState.uiState.feedback = 'feedback.errors.network';
             }
             break;
 
           case 'Error':
             if (e.message === 'Parser Error') {
               watchedState.processState = 'parser_error';
-              watchedState.uiState.feedback = i18nCodes.feedback.errors.parser;
+              watchedState.uiState.feedback = 'feedback.errors.parser';
             }
             break;
 
