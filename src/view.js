@@ -125,7 +125,7 @@ const renderFeeds = (elements, values, i18nInstance) => {
     p.textContent = feed.description;
 
     li.append(h3, p);
-    ul.append(li);
+    ul.prepend(li);
   });
 
   div2.append(h2);
@@ -185,7 +185,7 @@ const renderPosts = (elements, values, i18nInstance, watchedState) => {
     });
 
     li.append(a, btn);
-    ul.append(li);
+    ul.prepend(li);
   });
 
   div2.append(h2);
