@@ -1,7 +1,26 @@
 import onChange from 'on-change';
 
-// TODO add fn for initial html render
 // TODO combine renderFeeds and renderPosts
+
+const renderInitContent = (elements, i18nInstance) => {
+  const {
+    modalFullArticleBtn,
+    modalCloseBtn,
+    mainTitle,
+    slogan,
+    label,
+    submitBtn,
+    sample,
+  } = elements;
+
+  modalFullArticleBtn.textContent = i18nInstance.t('modal.full_article');
+  modalCloseBtn.textContent = i18nInstance.t('modal.close');
+  mainTitle.textContent = i18nInstance.t('main_title');
+  slogan.textContent = i18nInstance.t('slogan');
+  label.textContent = i18nInstance.t('rssForm.label');
+  submitBtn.textContent = i18nInstance.t('rssForm.submit');
+  sample.textContent = i18nInstance.t('sample');
+};
 
 const handleProcessState = (elements, processState) => {
   const { form, input, submitBtn } = elements;
@@ -106,7 +125,7 @@ const renderFeeds = (elements, values, i18nInstance) => {
     p.textContent = feed.description;
 
     li.append(h3, p);
-    ul.append(li);
+    ul.prepend(li);
   });
 
   div2.append(h2);
@@ -153,7 +172,7 @@ const renderPosts = (elements, values, i18nInstance, watchedState) => {
     btn.dataset.id = post.id;
     btn.dataset.bsToggle = 'modal';
     btn.dataset.bsTarget = '#modal';
-    btn.textContent = i18nInstance.t('buttons.modal');
+    btn.textContent = i18nInstance.t('modal.view');
 
     btn.addEventListener('click', (ev) => {
       const { bsTarget } = ev.target.dataset;
@@ -166,7 +185,7 @@ const renderPosts = (elements, values, i18nInstance, watchedState) => {
     });
 
     li.append(a, btn);
-    ul.append(li);
+    ul.prepend(li);
   });
 
   div2.append(h2);
@@ -186,6 +205,8 @@ const setLinkBrightness = (readPostsId) => {
     }
   });
 };
+
+export { renderInitContent };
 
 export default (state, elements, i18nInstance) => {
   const watchedState = onChange(state, (path, value) => {
