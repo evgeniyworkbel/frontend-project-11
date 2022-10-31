@@ -23,12 +23,16 @@ const extractPosts = (domTree) => {
       const titleEl = item.querySelector('title');
       const descriptionEl = item.querySelector('description');
       const linkEl = item.querySelector('link');
+      const guidEl = item.querySelector('guid');
 
       const title = titleEl.textContent;
       const description = descriptionEl.textContent;
       const link = linkEl.textContent;
+      const guid = guidEl.textContent;
 
-      return { title, description, link };
+      return {
+        title, description, link, guid,
+      };
     });
 
   return posts;

@@ -1,8 +1,6 @@
 import axios from 'axios';
 import parse from './parser.js';
 
-// TODO look for another way to analyze of containing new posts (prop "title" is not robust)
-
 export default function updatePosts(watchedState, proxyUrl, id, generateIdFunc) {
   return axios.get(proxyUrl)
     .then((response) => response.data.contents)
@@ -16,9 +14,9 @@ export default function updatePosts(watchedState, proxyUrl, id, generateIdFunc) 
     })
     .then((requestedPosts) => {
       const loadedPosts = watchedState.data.posts.filter((post) => post.feedId === id);
-      const loadedPostsTitles = loadedPosts.map((post) => post.title);
-      const coll = new Set(loadedPostsTitles);
-      const newPosts = requestedPosts.filter(({ title }) => !coll.has(title));
+      const loadedPostsGuids = loadedPosts.map((post) => post.guid);
+      const coll = new Set(loadedPostsGuids);
+      const newPosts = requestedPosts.filter(({ guid }) => !coll.has(guid));
 
       if (newPosts.length === 0) {
         return;
