@@ -62,8 +62,6 @@ export default () => {
   };
 
   const elements = {
-    modalFullArticleBtn: document.querySelector('.modal-footer a.full-article'),
-    modalCloseBtn: document.querySelector('.modal-footer button'),
     mainTitle: document.getElementById('main-title'),
     slogan: document.querySelector('main .lead'),
     form: document.querySelector('.rss-form'),
