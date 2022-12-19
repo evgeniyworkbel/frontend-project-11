@@ -4,8 +4,6 @@ import onChange from 'on-change';
 
 const renderInitContent = (elements, i18nInstance) => {
   const {
-    modalFullArticleBtn,
-    modalCloseBtn,
     mainTitle,
     slogan,
     label,
@@ -13,8 +11,6 @@ const renderInitContent = (elements, i18nInstance) => {
     sample,
   } = elements;
 
-  modalFullArticleBtn.textContent = i18nInstance.t('modal.full_article');
-  modalCloseBtn.textContent = i18nInstance.t('modal.close');
   mainTitle.textContent = i18nInstance.t('main_title');
   slogan.textContent = i18nInstance.t('slogan');
   label.textContent = i18nInstance.t('rssForm.label');
@@ -136,6 +132,7 @@ const renderFeeds = (elements, values, i18nInstance) => {
 
 const renderPosts = (elements, values, i18nInstance, watchedState) => {
   const { posts } = elements;
+
   const div1 = document.createElement('div');
   div1.classList.add('card', 'border-0');
 
@@ -160,6 +157,7 @@ const renderPosts = (elements, values, i18nInstance, watchedState) => {
 
     const a = document.createElement('a');
     a.classList.add('fw-bold');
+
     a.setAttribute('href', post.link);
     a.setAttribute('target', 'blank');
     a.setAttribute('rel', 'noopener noreferrer');
@@ -179,9 +177,14 @@ const renderPosts = (elements, values, i18nInstance, watchedState) => {
       const modal = document.querySelector(bsTarget);
       const modalTitle = modal.querySelector('.modal-title');
       const modalBody = modal.querySelector('.modal-body');
+      const modalFullArticleBtn = document.querySelector('.modal-footer a.full-article');
+      const modalCloseBtn = document.querySelector('.modal-footer button');
 
       modalTitle.textContent = post.title;
       modalBody.textContent = post.description;
+      modalFullArticleBtn.setAttribute('href', post.link);
+      modalFullArticleBtn.textContent = i18nInstance.t('modal.full_article');
+      modalCloseBtn.textContent = i18nInstance.t('modal.close');
     });
 
     li.append(a, btn);
