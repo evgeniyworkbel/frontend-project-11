@@ -51,7 +51,7 @@ $ make develop
 
 Build production:
 ```
-$ make develop
+$ make build
 ```
 
 You may use [Lorem RSS Generator](https://github.com/mbertolacci/lorem-rss) additionally. It is a GitHub library which generates lorem rss feeds at specified intervals. In order to see how my news aggregator works,you just need to copy one of links from library page and paste into rss reader form.
