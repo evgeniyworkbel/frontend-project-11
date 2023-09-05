@@ -42,24 +42,24 @@ $ make link
 ```
 And don't remember rerun this command in case of changes package.json!
 
-## Usage
+## Development
 
-Deploy local server:
+To start local server:
 ```
 $ make develop
 ```
 
-Build production:
+To lint code:
+```
+$ make lint
+```
+
+To build production:
 ```
 $ make build
 ```
 
 You may use [Lorem RSS Generator](https://github.com/mbertolacci/lorem-rss) additionally. It is a GitHub library which generates lorem rss feeds at specified intervals. In order to see how my news aggregator works,you just need to copy one of links from library page and paste into rss reader form.
-
-#### Linters:
-```
-$ make lint
-```
 
 ## Demo
 https://rss-aggregator-green.vercel.app/
