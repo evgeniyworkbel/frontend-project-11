@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://rss-aggregator-green.vercel.app/">
-    <img alt="aggregator" src="https://user-images.githubusercontent.com/84579087/164723061-7ea9b03e-6a03-4a66-bb04-7ebbc3b7e65d.png">
+    <img alt="aggregator" src="assets/banner.png">
   </a>
 </p>
 
